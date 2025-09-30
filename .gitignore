@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+.venv/
+venv/
+
+# Environment
+.env
+*.env
+
+# Node / Frontend
+node_modules/
+dist/
+build/
+.cache/
+
+# Models / Data
+*.bin
+*.pt
+*.ckpt
+*.h5
+*.onnx
+*.pkl
+*.joblib
+
+# VSCode / IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Hugging Face / Model files
+*.safetensors
+*.bin
+*.pt
+*.ckpt
+*.onnx
+*.h5
+*.pkl
+*.joblib
+*.tar.gz
+
+# Transformers cache
+huggingface/
+transformers_cache/

@@ -1,0 +1,1130 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic AI Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #0f0f23;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #16213e;
+            --bg-hover: #1e2749;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a8b8;
+            --text-muted: #6b7280;
+            --accent-primary: #4f46e5;
+            --accent-secondary: #06b6d4;
+            --accent-gradient: linear-gradient(135deg, #4f46e5, #06b6d4);
+            --accent-light: rgba(79, 70, 229, 0.1);
+            --border-color: #2d3748;
+            --success-color: #10b981;
+            --success-light: rgba(16, 185, 129, 0.1);
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.25);
+            --font-family: 'Inter', sans-serif;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.6;
+            font-size: 16px;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .main-panel {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem 3rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        .workflow-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .step-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideInUp 0.6s ease forwards;
+        }
+
+        .step-card.completed {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .step-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            background: var(--accent-gradient);
+            color: white;
+            font-weight: 700;
+            font-size: 1.2rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .step-number.completed {
+            background: var(--success-color);
+        }
+
+        .step-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+        }
+
+        .question-text {
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.7;
+            padding: 1rem;
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            border-left: 4px solid var(--accent-primary);
+        }
+
+        /* Improved Option Grid for Service Selection */
+        .option-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .option-card {
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .option-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .option-card input {
+            display: none;
+        }
+
+        .option-card-content {
+            padding: 2rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            background: var(--bg-card);
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-card-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            transition: left 0.5s;
+        }
+
+        .option-card:hover .option-card-content::before {
+            left: 100%;
+        }
+
+        .option-card:hover .option-card-content {
+            border-color: var(--accent-primary);
+            background: var(--bg-hover);
+        }
+
+        .option-card input:checked+.option-card-content {
+            border-color: var(--accent-primary);
+            background: var(--accent-light);
+            color: var(--accent-primary);
+            box-shadow: 0 0 32px rgba(79, 70, 229, 0.3);
+        }
+
+        /* Improved Horizontal Option List for Key Highlights */
+        .option-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .option-list-item {
+            display: flex;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: var(--bg-card);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .option-list-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: var(--accent-primary);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .option-list-item:hover {
+            border-color: var(--accent-primary);
+            background: var(--bg-hover);
+            transform: translateX(8px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .option-list-item:hover::before {
+            transform: scaleY(1);
+        }
+
+        .option-list-item input {
+            display: none;
+        }
+
+        .option-list-item input:checked+.option-list-label {
+            background: var(--accent-light);
+            color: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .option-list-item input:checked~* {
+            background: var(--accent-light);
+        }
+
+        .option-list-label {
+            padding: 1.5rem 2rem;
+            width: 100%;
+            border-radius: calc(var(--radius-md) - 2px);
+            font-weight: 500;
+            font-size: 1rem;
+            line-height: 1.5;
+            transition: all 0.3s ease;
+        }
+
+        /* Key Highlights Special Layout */
+        .highlights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .highlight-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .highlight-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(79, 70, 229, 0.05) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .highlight-card:hover::before {
+            opacity: 1;
+        }
+
+        .highlight-card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .highlight-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .highlight-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .feature-tag {
+            background: var(--accent-light);
+            color: var(--accent-primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            margin-top: 2rem;
+        }
+
+        .cta-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .cta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .cta-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .cta-card:hover {
+            border-color: var(--accent-primary);
+            background: var(--bg-hover);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .cta-card.primary {
+            border-color: var(--accent-primary);
+            background: var(--accent-light);
+        }
+
+        .cta-title-text {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .cta-link {
+            color: var(--accent-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 1.5rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: inherit;
+            min-height: 140px;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            background: var(--bg-hover);
+            box-shadow: 0 0 20px rgba(79, 70, 229, 0.1);
+        }
+
+        .action-button {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 2rem;
+            float: right;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .action-button:hover::before {
+            left: 100%;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .action-button:disabled {
+            background: var(--bg-card);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .logs-panel {
+            width: 420px;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logs-header {
+            padding: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-card);
+        }
+
+        .logs-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logs-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+
+        .log-entry {
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+            padding: 1rem 1.5rem;
+            font-size: 0.9rem;
+            animation: slideInRight 0.4s ease;
+            border-left: 4px solid var(--accent-primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .log-title {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .log-status {
+            font-size: 0.8rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .log-status.active {
+            background: var(--accent-light);
+            color: var(--accent-primary);
+        }
+
+        .log-status.completed {
+            background: var(--success-light);
+            color: var(--success-color);
+        }
+
+        .log-details {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .loader {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 2rem;
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            margin: 1rem 0;
+        }
+
+        .results-showcase {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            animation: slideInUp 0.6s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .results-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .results-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .results-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .result-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .result-card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-icon {
+            font-size: 1.8rem;
+        }
+
+        .result-card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .insight-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .insight-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .insight-value {
+            font-size: 1rem;
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .daily-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        .daily-item:last-child {
+            border-bottom: none;
+        }
+
+        .daily-day {
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .poster-image-container img {
+            max-width: 100%;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-md);
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+
+            .logs-panel {
+                width: 100%;
+                max-height: 300px;
+            }
+
+            .main-panel {
+                padding: 1.5rem;
+            }
+
+            .option-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .highlights-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <div class="main-panel">
+            <div class="header">
+                <h1>Agentic AI</h1>
+                <p>Interactive Analysis Workflow</p>
+            </div>
+            <div class="workflow-container" id="workflow-container"></div>
+        </div>
+        <div class="logs-panel">
+            <div class="logs-header">
+                <div class="logs-title">📋 Activity Logs</div>
+            </div>
+            <div class="logs-content" id="logs-content"></div>
+        </div>
+    </div>
+
+    <script>
+        const workflowContainer = document.getElementById('workflow-container');
+        const logsContent = document.getElementById('logs-content');
+        const GENERATE_API = 'http://localhost:8000/generate';
+        const CONTINUE_API = 'http://localhost:8000/continue';
+        let currentThreadId = null;
+        let stepCounter = 1;
+
+        function addLog(title, details = '', status = 'active') {
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            const statusColor = status === 'completed' ? 'var(--success-color)' : 'var(--accent-primary)';
+            logEntry.style.borderLeftColor = statusColor;
+            logEntry.innerHTML = `
+                <div class="log-header">
+                    <span class="log-title">${title}</span>
+                    <span class="log-status ${status}">${status}</span>
+                </div>
+                ${details ? `<div class="log-details">${details}</div>` : ''}
+            `;
+            logsContent.appendChild(logEntry);
+            logsContent.scrollTop = logsContent.scrollHeight;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            addLog('System Initialized', 'Ready for user interaction.', 'completed');
+            renderInitialStep();
+        });
+
+        async function sendRequest(endpoint, payload, actionButton) {
+            if (actionButton) {
+                actionButton.textContent = 'Processing...';
+                actionButton.disabled = true;
+            }
+            showLoader();
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'API call failed');
+                }
+                const data = await response.json();
+                handleApiResponse(data);
+            } catch (error) {
+                console.error("API Error:", error);
+                addLog('API Error', error.message, 'error');
+            } finally {
+                hideLoader();
+            }
+        }
+
+        function handleApiResponse(data) {
+            if (data.status === 'requires_input') {
+                currentThreadId = data.thread_id;
+                renderNewStep(data.questions[0]);
+            } else if (data.status === 'success') {
+                renderFinalResult(data);
+            }
+        }
+
+        async function startInitialFlow(event) {
+            const service = document.querySelector('input[name="service"]:checked').value;
+            addLog('Generation Started', `Service: ${service}, Mode: Interactive`, 'active');
+            const payload = { service, mode: 'interactive' };
+            sendRequest(GENERATE_API, payload, event.target);
+        }
+
+        async function handleSubmit(stepCard, button) {
+            const userAnswers = {};
+            stepCard.querySelectorAll('textarea, input[type="text"], input[type="radio"]:checked, input[type="checkbox"]:checked').forEach(input => {
+                if (input.type === 'radio') {
+                    userAnswers[input.name] = input.value;
+                } else if (input.type === 'checkbox') {
+                    if (!userAnswers[input.name]) {
+                        userAnswers[input.name] = [];
+                    }
+                    userAnswers[input.name].push(input.value);
+                } else {
+                    userAnswers[input.id] = input.value;
+                }
+            });
+            addLog(`Processing User Input`, `Analyzing submitted responses...`, 'active');
+            const payload = { thread_id: currentThreadId, user_answers: userAnswers };
+            sendRequest(CONTINUE_API, payload, button);
+        }
+
+        function renderInitialStep() {
+            const stepHtml = `
+                <div class="step-card active" id="step-${stepCounter}">
+                    <div class="step-header">
+                        <div class="step-number">${stepCounter}</div>
+                        <div class="step-title">Choose Your Service</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Select the type of analysis you need:</label>
+                        <div class="option-grid">
+                            <label class="option-card">
+                                <input type="radio" name="service" value="sales" checked>
+                                <div class="option-card-content">
+                                    <span>📊 Sales Analysis</span>
+                                    <p style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.8;">Analyze sales data and generate insights</p>
+                                </div>
+                            </label>
+                            <label class="option-card">
+                                <input type="radio" name="service" value="poster">
+                                <div class="option-card-content">
+                                    <span>🎨 Poster Generator</span>
+                                    <p style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.8;">Create professional marketing posters</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    <button class="action-button" id="start-button">Start Analysis</button>
+                </div>`;
+            workflowContainer.innerHTML = stepHtml;
+            document.getElementById('start-button').addEventListener('click', startInitialFlow);
+        }
+
+        function renderNewStep(question) {
+            const lastStep = workflowContainer.lastElementChild;
+            if (lastStep) {
+                lastStep.classList.remove('active');
+                lastStep.classList.add('completed');
+                lastStep.querySelectorAll('input, button').forEach(el => el.disabled = true);
+                addLog(`Step ${stepCounter} Complete`, getAnswerSummary(lastStep), 'completed');
+            }
+
+            stepCounter++;
+            addLog(`Step ${stepCounter} Loading`, question.text, 'active');
+
+            const newStep = document.createElement('div');
+            newStep.className = 'step-card active';
+            newStep.id = `step-${stepCounter}`;
+
+            let contentHTML = '';
+
+            if (question.ui_element === 'textarea') {
+                contentHTML = `
+                    <div class="form-group">
+                        <label>${question.text}</label>
+                        <textarea id="${question.id}" name="${question.id}" class="form-textarea" placeholder="Enter your detailed response here..."></textarea>
+                    </div>`;
+            } else if (question.ui_element === 'form') {
+                contentHTML = question.fields.map(field => {
+                    if (field.type === 'textarea') {
+                        return `
+                            <div class="form-group">
+                                <label>${field.label}</label>
+                                <textarea id="${field.id}" name="${field.id}" class="form-textarea" placeholder="Enter details..."></textarea>
+                            </div>`;
+                    } else if (field.type === 'radio') {
+                        return `
+                            <div class="form-group">
+                                <label>${field.label}</label>
+                                <div class="option-grid">
+                                    ${field.options.map(opt => `
+                                        <label class="option-card">
+                                            <input type="radio" name="${field.id}" value="${opt}">
+                                            <div class="option-card-content"><span>${opt}</span></div>
+                                        </label>
+                                    `).join('')}
+                                </div>
+                            </div>`;
+                    }
+                    return '';
+                }).join('');
+            } else if (question.ui_element === 'radio' || question.ui_element === 'multiselect') {
+                const inputType = question.ui_element === 'radio' ? 'radio' : 'checkbox';
+
+                // Check if this is the "Key Highlights" step - special handling
+                if (question.text.toLowerCase().includes('key highlights') || question.text.toLowerCase().includes('java bootcamp')) {
+                    contentHTML = `
+                        <div class="question-text">${question.text}</div>
+                        <div class="highlights-grid">
+                            <div class="highlight-card">
+                                <div class="highlight-title">💼 Job Placement Support</div>
+                                <div class="highlight-features">
+                                    <span class="feature-tag">100% Support</span>
+                                    <span class="feature-tag">Certified Instructors</span>
+                                    <span class="feature-tag">Real Projects</span>
+                                </div>
+                            </div>
+                            <div class="highlight-card">
+                                <div class="highlight-title">👥 Small Cohorts</div>
+                                <div class="highlight-features">
+                                    <span class="feature-tag">Career Coaching</span>
+                                    <span class="feature-tag">Interview Prep</span>
+                                </div>
+                            </div>
+                            <div class="highlight-card">
+                                <div class="highlight-title">🚀 Hands-On Labs</div>
+                                <div class="highlight-features">
+                                    <span class="feature-tag">Cloud Integration</span>
+                                    <span class="feature-tag">Portfolio Review</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="cta-section">
+                            <div class="cta-title">Call-to-Action Links</div>
+                            <div class="cta-grid">
+                                <div class="cta-card">
+                                    <div class="cta-title-text">Enroll Now →</div>
+                                    <div class="cta-link">www.javabootcamp.com</div>
+                                </div>
+                                <div class="cta-card primary">
+                                    <div class="cta-title-text">Reserve Your Spot →</div>
+                                    <div class="cta-link">signup.javabootcamp.com</div>
+                                </div>
+                                <div class="cta-card">
+                                    <div class="cta-title-text">Start Learning Today →</div>
+                                    <div class="cta-link">learn.javabootcamp.com</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="option-list" style="margin-top: 2rem;">
+                            ${question.options.map(opt => `
+                                <label class="option-list-item">
+                                    <input type="${inputType}" name="${question.id}" value="${opt}">
+                                    <div class="option-list-label"><span>${opt}</span></div>
+                                </label>
+                            `).join('')}
+                        </div>`;
+                } else {
+                    // Regular options layout
+                    const isLongOptions = question.options.some(opt => opt.length > 60);
+
+                    if (isLongOptions) {
+                        contentHTML = `
+                            <div class="question-text">${question.text}</div>
+                            <div class="option-list">
+                                ${question.options.map(opt => `
+                                    <label class="option-list-item">
+                                        <input type="${inputType}" name="${question.id}" value="${opt}">
+                                        <div class="option-list-label"><span>${opt}</span></div>
+                                    </label>
+                                `).join('')}
+                            </div>`;
+                    } else {
+                        contentHTML = `
+                            <div class="question-text">${question.text}</div>
+                            <div class="option-grid">
+                                ${question.options.map(opt => `
+                                    <label class="option-card">
+                                        <input type="${inputType}" name="${question.id}" value="${opt}">
+                                        <div class="option-card-content"><span>${opt}</span></div>
+                                    </label>
+                                `).join('')}
+                            </div>`;
+                    }
+                }
+            }
+
+            newStep.innerHTML = `
+                <div class="step-header">
+                    <div class="step-number">${stepCounter}</div>
+                    <div class="step-title">${question.ui_element === 'textarea' ? 'Input Required' : 'Selection Required'}</div>
+                </div>
+                ${contentHTML}
+                <button class="action-button">Continue</button>
+            `;
+
+            workflowContainer.appendChild(newStep);
+            newStep.querySelector('.action-button').addEventListener('click', (e) => handleSubmit(newStep, e.target));
+
+            // Smooth scroll to new step
+            setTimeout(() => {
+                newStep.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+
+        function renderFinalResult(data) {
+            const lastStep = workflowContainer.lastElementChild;
+            if (lastStep) {
+                lastStep.classList.remove('active');
+                lastStep.classList.add('completed');
+                lastStep.querySelectorAll('input, button').forEach(el => el.disabled = true);
+                addLog(`Step ${stepCounter} Complete`, getAnswerSummary(lastStep), 'completed');
+            }
+
+            addLog('Workflow Complete', 'Final result generated successfully.', 'completed');
+
+            const resultCard = document.createElement('div');
+            resultCard.className = 'results-showcase';
+
+            let resultHTML = '';
+            if (data.agent_type === 'poster' && data.image_base64) {
+                resultHTML = `
+                    <div class="results-header">
+                        <div class="results-title">🎨 Poster Generated Successfully</div>
+                        <div class="results-subtitle">Your custom poster is ready for download</div>
+                    </div>
+                    <div class="poster-image-container">
+                        <img src="data:image/png;base64,${data.image_base64}" alt="Generated Poster" />
+                    </div>
+                `;
+            } else if (data.agent_type === 'sales' && data.sales_analysis_report) {
+                const report = data.sales_analysis_report;
+                resultHTML = `
+                    <div class="results-header">
+                        <div class="results-title">📊 Sales Analysis Complete</div>
+                        <div class="results-subtitle">AI-powered insights and recommendations</div>
+                    </div>
+                    <div class="results-grid">
+                        <div class="result-card">
+                            <div class="result-card-header">
+                                <div class="result-icon">📈</div>
+                                <div class="result-card-title">Strategic Insights</div>
+                            </div>
+                            <div class="insight-item">
+                                <div class="insight-label">Executive Summary</div>
+                                <div class="insight-value">${report.summary || 'Comprehensive analysis completed with actionable insights.'}</div>
+                            </div>
+                            <div class="insight-item">
+                                <div class="insight-label">Predicted Intent</div>
+                                <div class="insight-value">${data.predicted_intent || 'Growth-focused strategy recommended'}</div>
+                            </div>
+                            <div class="insight-item">
+                                <div class="insight-label">Next Best Action</div>
+                                <div class="insight-value">${data.next_best_action || 'Implement recommended optimization strategies'}</div>
+                            </div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-card-header">
+                                <div class="result-icon">🤖</div>
+                                <div class="result-card-title">Model Analytics</div>
+                            </div>
+                            <div class="daily-insights">
+                                ${(report.daily_breakdown && report.daily_breakdown.length > 0) ?
+                        report.daily_breakdown.map(day => `
+                                        <div class="daily-item">
+                                            <span class="daily-day">${day.day}</span>
+                                            <span class="daily-intent">${day.intent}</span>
+                                        </div>
+                                    `).join('') :
+                        '<div style="text-align: center; padding: 2rem; color: var(--text-secondary);">Analytics data processed successfully</div>'
+                    }
+                            </div>
+                        </div>
+                    </div>`;
+            } else {
+                resultHTML = `
+                    <div class="results-header">
+                        <div class="results-title">✅ Workflow Completed</div>
+                        <div class="results-subtitle">Process finished successfully</div>
+                    </div>
+                    <div style="text-align: center; padding: 2rem;">
+                        <p style="font-size: 1.1rem; color: var(--text-secondary);">${data.message || 'The analysis has been completed successfully.'}</p>
+                    </div>`;
+            }
+
+            resultCard.innerHTML = resultHTML;
+            workflowContainer.appendChild(resultCard);
+
+            // Scroll to results
+            setTimeout(() => {
+                resultCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+        }
+
+        function showLoader() {
+            let loader = workflowContainer.querySelector('.loader');
+            if (!loader) {
+                loader = document.createElement('div');
+                loader.className = 'loader';
+                loader.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 1rem;">
+                        <div style="width: 20px; height: 20px; border: 2px solid var(--accent-primary); border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                        <span>AI Agent is processing...</span>
+                    </div>
+                    <style>
+                        @keyframes spin {
+                            0% { transform: rotate(0deg); }
+                            100% { transform: rotate(360deg); }
+                        }
+                    </style>
+                `;
+                workflowContainer.appendChild(loader);
+            }
+        }
+
+        function hideLoader() {
+            const loader = workflowContainer.querySelector('.loader');
+            if (loader) loader.remove();
+        }
+
+        function getAnswerSummary(stepCard) {
+            const radios = stepCard.querySelectorAll('input[type="radio"]:checked');
+            if (radios.length > 0) {
+                const content = radios[0].parentElement.querySelector('.option-card-content span, .option-list-label span');
+                return `Selected: ${content ? content.textContent.trim() : radios[0].value}`;
+            }
+
+            const checkboxes = stepCard.querySelectorAll('input[type="checkbox"]:checked');
+            if (checkboxes.length > 0) {
+                return `Selected ${checkboxes.length} option(s)`;
+            }
+
+            const textInputs = stepCard.querySelectorAll('textarea');
+            if (textInputs.length > 0 && textInputs[0].value.trim()) {
+                return `Custom input provided (${textInputs[0].value.length} characters)`;
+            }
+
+            return 'User input completed';
+        }
+    </script>
+</body>
+
+</html>

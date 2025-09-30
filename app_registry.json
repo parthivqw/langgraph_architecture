@@ -1,0 +1,33 @@
+{
+  "Poster Generator": {
+    "entrypoint": "poster_agent.run",
+    "workflow_description": "The autonomous workflow for poster generation is a sophisticated, multi-step AI process. First, an AI model enhances the user's initial prompt and decides which specific text fields (like headline, CTA, testimonial) are needed. Second, another AI model takes this plan and generates the creative text content for each of those selected fields. Third, all of this generated content is assembled into a final, detailed prompt. Finally, that prompt is sent to an image generation model to create the poster.",
+    "required_fields": [
+      "main_prompt",
+      "theme",
+      "include_hero_headline",
+      "include_hero_subline",
+      "include_description",
+      "include_cta",
+      "include_cta_link",
+      "include_testimonial",
+      "include_success_metrics",
+      "include_target_audience",
+      "custom_prompt"
+    ]
+  },
+  "Lead/Sales Intent Generator": {
+    "entrypoint": "sales_agent.run",
+    "workflow_description": "The autonomous workflow for sales analysis is a two-step AI process. First, an AI model cleans and flattens the raw, multi-day sales conversation provided by the user. This cleaned text is then passed to a specialized, fine-tuned BERT model that predicts the buyer's intent with high accuracy. Second, the original conversation and the predicted intent are sent to a powerful LLM which then generates a concise, actionable 'next best action' for the sales team.",
+    "required_fields": ["conversation", "predicted_intent"]
+  },
+  "Content Cluster Analyzer": {
+    "entrypoint": "cluster_agent.run",
+    "required_fields": [
+      "main_prompt",
+      "focus_keyword",
+      "audience_type",
+      "desired_depth"
+    ]
+  }
+}
