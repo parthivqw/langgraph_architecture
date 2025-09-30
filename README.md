@@ -82,13 +82,19 @@ flowchart TD
         C3 -.-> I2
     end
     
-    D["Hugging Face<br/>BERT Model"] -.->|Used by| S2
-    E["Groq LLM<br/>meta-llama/llama-4"] -.->|Used by| S3
+    D["Hugging Face BERT Model"] -.->|Used by| S2
+    E["Groq LLM meta-llama/llama-4"] -.->|Used by| S3
     E -.->|Used by| I1
-    F["a4f.co API<br/>Imagen 3"] -.->|Used by| P2
+    F["a4f.co API Imagen 3"] -.->|Used by| P2
     
     END1 --> G["Final JSON Response<br/>via format_final_response"]
     G --> B
+    
+    subgraph "External APIs"
+        D
+        E
+        F
+    end
 🚀 Live Model Endpoint
 Fine-tuned BERT for intent detection: Sanji8421/fine_tuned_BERT
 
