@@ -1,108 +1,143 @@
 # LangGraph Multi-Agent Sales & Creative System
 
-This project is a production-ready, multi-agent AI system designed to handle complex, multi-step user requests. It demonstrates an advanced, orchestrated workflow built with **LangGraph**, where a central supervisor intelligently routes tasks to a suite of specialized AI agents.
+This project is a **production-ready, multi-agent AI system** designed to handle complex, multi-step user requests. It demonstrates an advanced, orchestrated workflow built with **LangGraph**, where a central supervisor intelligently routes tasks to a suite of specialized AI agents.
 
-The system is architected as a modern, decoupled microservice, with a lightweight **FastAPI backend** for orchestration and specialized AI models deployed as independent, callable endpoints.
+The system is architected as a **decoupled microservice**, with a lightweight **FastAPI backend** and specialized AI models deployed as independent endpoints.
 
 ---
 
 ## 🌟 Key Features & Architecture
 
-- **Advanced Agentic Workflow:** A robust state machine built with LangGraph manages the complex flow of information and conditional transitions between AI agents.  
-- **Intelligent Routing:** A central supervisor (`supervisor.py`) analyzes user intent and dynamically routes tasks to the appropriate agent.  
-- **Interactive & Autonomous Modes:** Operates in a fully autonomous mode or engages the user in a multi-step interactive conversation to gather necessary details.  
-- **Hybrid AI Strategy:**  
-  - **Specialized Fine-Tuned Models:** A custom fine-tuned **BERT** model provides high-accuracy, domain-specific intent classification.  
-  - **Powerful Generalist LLMs:** Large Language Models (via **Groq**) are used for complex reasoning, dynamic question generation, and final analysis.  
-- **Production-Ready Deployment:** FastAPI service as the core app; heavy BERT model hosted on Hugging Face for a scalable microservice architecture.
+- **Advanced Agentic Workflow:** Robust state machine built with LangGraph manages complex flows and conditional transitions between agents.  
+- **Intelligent Routing:** Central supervisor (`supervisor.py`) analyzes user intent and routes tasks dynamically.  
+- **Interactive & Autonomous Modes:** Can run fully autonomously or engage users in multi-step conversations.  
+- **Hybrid AI Strategy:**
+  - **Specialized Fine-Tuned Models:** BERT model for high-accuracy, domain-specific intent classification.  
+  - **Powerful Generalist LLMs:** LLMs (via Groq) handle reasoning, dynamic question generation, and final analysis.  
+- **Production-Ready Deployment:** FastAPI service handles orchestration; heavy BERT model hosted on Hugging Face.
 
 ---
 
 ## 🧠 Meet the Agents
 
 ### 🕵️ Advanced Sales Agent
-- **Conversation Splitting:** Parses raw conversation text into daily entries.  
-- **Specialized Intent Prediction:** Uses fine-tuned BERT to predict customer intent (e.g., Information Gathering, Price Concern).  
-- **Synthesized Final Analysis:** Sends conversation + daily intent to an LLM, which produces a narrative summary, overall intent, and recommended "next best action."  
+- Parses raw multi-day sales conversations into daily entries.  
+- Calls **fine-tuned BERT** for intent prediction per day.  
+- Synthesizes results with an LLM, providing narrative summary and recommended "next best action".
 
 ### 🎨 Interactive Poster Agent
-- **Context-Aware Question Generation:** Generates dynamic, relevant follow-up questions based on the user's core idea.  
-- **Dynamic UI Generation:** LLM acts as a UI/UX designer, providing creative, context-aware options.  
-- **Final Image Creation:** Calls a dedicated image-generation API (like Imagen 3) to create the final poster.
+- Engages users to gather creative task information.  
+- Uses context-aware LLMs to generate follow-up questions dynamically.  
+- Builds prompts and calls **Imagen 3 API** to generate final poster images.
 
 ---
 
-## 🏗️ System Architecture Diagram
+## 🏗️ System Architecture & Workflow
 
 ```mermaid
-flowchart LR
-    A["User Request /generate"] --> B["FastAPI Backend"]
-    B --> C["LangGraph Supervisor"]
-    C --> D["BERT Model on Hugging Face"]
-    D --> C
-    C --> E["LLM on Groq"]
-    E --> C
-    C --> F["Final JSON Response"]
+flowchart TD
+    A["User Request<br/>/generate or /continue"] --> B["FastAPI Backend<br/>main.py"]
+    
+    B --> C["LangGraph Supervisor<br/>supervisor.py"]
     
     subgraph "LangGraph Workflow"
-        C1["override_intent"] --> C2["route_after_intent"]
-        C2 -->|Interactive| C3["interaction_manager"]
-        C2 -->|Autonomous| C4["sales_agent_auto / poster_agent_auto"]
-        C3 --> C5["after_interaction_router"]
-        C5 --> C4
+        C --> C1["override_intent_node<br/>Loads app_registry.json"]
+        C1 --> C2["route_after_intent<br/>Router"]
+        
+        C2 -->|execution_mode == 'interactive'| C3["interaction_manager_node<br/>Asks questions one-by-one"]
+        C2 -->|execution_mode == 'autonomous'<br/>service == 'poster'| C4A["poster_agent_auto"]
+        C2 -->|execution_mode == 'autonomous'<br/>service == 'sales'| C4B["sales_agent_auto"]
+        
+        C3 -->|Collects user_answers| C5["after_interaction_router"]
+        
+        C5 -->|interaction_is_required == true| C3
+        C5 -->|Complete + Poster| C6["poster_agent_interactive<br/>run_interactive_poster_flow_node"]
+        C5 -->|Complete + Sales| C4B
+        
+        C6 --> END1["END"]
+        C4A --> END1
+        C4B --> END1
     end
-    B --> C1
+    
+    subgraph "Poster Agent Tools"
+        P1["build_image_prompt_tool<br/>Uses POSTER_PROMPT_SKELETON"]
+        P2["generate_image_from_prompt_tool<br/>Calls Imagen 3 API"]
+        C6 -.-> P1
+        P1 -.-> P2
+    end
+    
+    subgraph "Sales Agent Tools"
+        S1["split_conversation_by_day"]
+        S2["predict_sales_intent_tool<br/>Fine-tuned BERT Model"]
+        S3["generate_sales_analysis_tool<br/>LLM Synthesis"]
+        C4B -.-> S1
+        S1 -.-> S2
+        S2 -.-> S3
+    end
+    
+    subgraph "Interaction Manager Tools"
+        I1["generate_questions_from_skeleton<br/>Context-aware Q&A"]
+        I2["generate_clarifying_sales_questions"]
+        C3 -.-> I1
+        C3 -.-> I2
+    end
+    
+    D["Hugging Face<br/>BERT Model"] -.->|Used by| S2
+    E["Groq LLM<br/>meta-llama/llama-4"] -.->|Used by| S3
+    E -.->|Used by| I1
+    F["a4f.co API<br/>Imagen 3"] -.->|Used by| P2
+    
+    END1 --> G["Final JSON Response<br/>via format_final_response"]
+    G --> B
 🚀 Live Model Endpoint
-The fine-tuned BERT model for intent detection is live and can be viewed on Hugging Face:
-
-Sanji8421/fine_tuned_BERT
+Fine-tuned BERT for intent detection: Sanji8421/fine_tuned_BERT
 
 🛠️ How to Run the Project
 1. Prerequisites
 Python 3.9+
 
-Hugging Face account
+Hugging Face account and API key
 
-API keys for Hugging Face and Groq
+Groq API key
+
+(Optional) Image generation API key for Poster Agent
 
 2. Setup
 bash
 Copy code
 git clone https://github.com/parthivqw/langgraph-multi-agent.git
 cd langgraph-multi-agent
-
 python -m venv venv
+# Activate virtual environment
 # Windows:
 venv\Scripts\activate
-# Mac/Linux:
+# Linux/macOS:
 source venv/bin/activate
-
 pip install -r requirements.txt
-Create a .env file in the root of the project:
+Set up .env file in project root:
 
 env
 Copy code
 HF_TOKEN="hf_YourHuggingFaceToken"
 GROQ_API_KEY="gsk_YourGroqApiKey"
-# Optional for Poster Agent
 IMAGEGEN_API_KEY="your_api_key_here"
-3. Run the Application
+3. Running the Application
 bash
 Copy code
 uvicorn main:app --reload
 4. Interacting with the API
-Navigate to http://127.0.0.1:8000/docs for interactive Swagger UI.
+API docs: http://127.0.0.1:8000/docs
 
-Example curl command (start a new interactive Sales Agent session):
+Start a new session (Sales Agent Interactive Mode):
 
 bash
 Copy code
-curl -X 'POST' \
-  'http://127.0.0.1:8000/generate' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
+curl -X POST \
+  http://127.0.0.1:8000/generate \
+  -H "accept: application/json" \
+  -H "Content-Type: application/json" \
   -d '{
   "service": "sales",
   "mode": "interactive"
 }'
-Use the returned thread_id to continue the conversation via /continue.
+Use /continue endpoint with thread_id to provide answers to follow-up questions.
